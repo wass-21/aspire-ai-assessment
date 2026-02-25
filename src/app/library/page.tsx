@@ -48,6 +48,12 @@ export default function LibraryPage() {
               >
                 Browse books →
               </Link>
+              <Link
+                href="/events"
+                className="inline-flex items-center rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600"
+              >
+                Events →
+              </Link>
             </nav>
           </div>
         </div>
