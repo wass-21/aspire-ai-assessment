@@ -29,3 +29,21 @@ export async function fetchEvents(search?: string): Promise<EventRow[]> {
   if (error) throw error;
   return (data ?? []) as EventRow[];
 }
+
+export async function fetchEventById(id: string): Promise<EventRow | null> {
+  const { data, error } = await supabase
+    .from("events")
+    .select(
+      "id,owner_id,title,start_time,end_time,location,description,status,created_at"
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as EventRow) ?? null;
+}
+
+export async function deleteEvent(id: string) {
+  const { error } = await supabase.from("events").delete().eq("id", id);
+  if (error) throw error;
+}
