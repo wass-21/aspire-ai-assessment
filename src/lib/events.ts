@@ -13,20 +13,46 @@ export type EventRow = {
 };
 
 export async function fetchEvents(search?: string): Promise<EventRow[]> {
-  let q = supabase
+  const user = await supabase.auth.getUser();
+  const email = user.data.user?.email?.toLowerCase();
+  const userId = user.data.user?.id;
+
+  if (!userId) return [];
+
+  // Fetch accepted invitations for this email (if any)
+  const { data: invites, error: e2 } = await supabase
+    .from("event_invitations")
+    .select("event_id")
+    .eq("invitee_email", email ?? "")
+    .eq("status", "accepted");
+
+  if (e2) throw e2;
+
+  const invitedIds = invites?.map((i) => i.event_id) ?? [];
+
+  // Events: owned by user OR id in accepted-invitation list
+  const ownerOrInvited =
+    invitedIds.length > 0
+      ? `owner_id.eq.${userId},id.in.(${invitedIds.join(",")})`
+      : `owner_id.eq.${userId}`;
+
+  let query = supabase
     .from("events")
     .select(
       "id,owner_id,title,start_time,end_time,location,description,status,created_at"
     )
+    .or(ownerOrInvited)
     .order("start_time", { ascending: true });
 
   if (search && search.trim()) {
     const s = search.trim();
-    q = q.or(`title.ilike.%${s}%,location.ilike.%${s}%`);
+    query = query.or(`title.ilike.%${s}%,location.ilike.%${s}%`);
   }
 
-  const { data, error } = await q;
+  const { data, error } = await query;
+
   if (error) throw error;
+
   return (data ?? []) as EventRow[];
 }
 
