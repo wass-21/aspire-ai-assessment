@@ -47,3 +47,21 @@ export async function deleteEvent(id: string) {
   const { error } = await supabase.from("events").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function updateEvent(
+  id: string,
+  updates: Partial<
+    Pick<
+      EventRow,
+      | "title"
+      | "start_time"
+      | "end_time"
+      | "location"
+      | "description"
+      | "status"
+    >
+  >
+) {
+  const { error } = await supabase.from("events").update(updates).eq("id", id);
+  if (error) throw error;
+}
