@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/src/lib/useAuth";
+import { supabase } from "@/src/lib/supabaseClient";
 import { EventRow, fetchEventById, deleteEvent } from "@/src/lib/events";
 import {
   createInvitation,
@@ -19,6 +20,7 @@ export default function EventDetailsPage() {
 
   const [event, setEvent] = useState<EventRow | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [myEmail, setMyEmail] = useState<string>("");
   const [invites, setInvites] = useState<InvitationRow[]>([]);
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,14 @@ export default function EventDetailsPage() {
   };
 
   useEffect(() => {
-    if (!loading) load();
+    const loadMe = async () => {
+      const { data } = await supabase.auth.getUser();
+      setMyEmail((data.user?.email ?? "").toLowerCase());
+    };
+    if (!loading) {
+      loadMe();
+      load();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, id]);
 
@@ -161,6 +170,11 @@ export default function EventDetailsPage() {
                     if (!event || !userId) return;
                     if (!inviteEmail.trim().includes("@")) {
                       alert("Please enter a valid email");
+                      return;
+                    }
+                    const email = inviteEmail.trim().toLowerCase();
+                    if (email === myEmail) {
+                      alert("You cannot invite yourself.");
                       return;
                     }
                     try {
