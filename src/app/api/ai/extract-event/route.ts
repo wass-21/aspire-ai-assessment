@@ -34,7 +34,7 @@ Current date: ${new Date().toISOString()}
 `;
 
     const completion = await openai.chat.completions.create({
-      model: "meta-llama/llama-3.1-8b-instruct:free",
+      model: "gpt-4o-mini",
       temperature: 0.1,
       messages: [
         {

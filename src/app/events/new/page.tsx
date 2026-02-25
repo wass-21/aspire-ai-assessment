@@ -20,6 +20,8 @@ export default function NewEventPage() {
   const [status, setStatus] = useState<EventStatus>("upcoming");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const onSave = async () => {
     if (!userId) return;
@@ -69,6 +71,51 @@ export default function NewEventPage() {
       <h1 className="text-2xl font-semibold dark:text-zinc-100">
         Create event
       </h1>
+
+      <div className="space-y-2 rounded-xl border p-4 dark:border-zinc-700 dark:bg-zinc-800">
+        <div className="text-sm font-medium dark:text-zinc-300">
+          Create with AI
+        </div>
+
+        <textarea
+          className="w-full rounded-lg border px-3 py-2 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100"
+          rows={3}
+          placeholder="Example: Team meeting next Monday at 10am in conference room"
+          value={aiText}
+          onChange={(e) => setAiText(e.target.value)}
+        />
+
+        <button
+          type="button"
+          disabled={aiLoading || !aiText.trim()}
+          onClick={async () => {
+            setAiLoading(true);
+            try {
+              const res = await fetch("/api/ai/extract-event", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: aiText }),
+              });
+
+              const data = await res.json();
+              if (!res.ok) throw new Error(data?.error);
+
+              setTitle(data.title ?? "");
+              setLocation(data.location ?? "");
+              setStartTime(data.start_time?.slice(0, 16) ?? "");
+              setEndTime(data.end_time?.slice(0, 16) ?? "");
+              setDescription(data.description ?? "");
+            } catch (e: unknown) {
+              alert(e instanceof Error ? e.message : "AI failed");
+            } finally {
+              setAiLoading(false);
+            }
+          }}
+          className="rounded-lg border px-4 py-2 hover:bg-gray-50 disabled:opacity-60 dark:border-zinc-600 dark:hover:bg-zinc-700"
+        >
+          {aiLoading ? "Extracting..." : "Extract event with AI"}
+        </button>
+      </div>
 
       <div className="space-y-3 rounded-xl border p-4 dark:border-zinc-700 dark:bg-zinc-800">
         <div>
