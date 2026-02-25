@@ -178,15 +178,22 @@ export default function EventDetailsPage() {
                       return;
                     }
                     try {
-                      const token = await createInvitation(
+                      const result = await createInvitation(
                         event.id,
-                        inviteEmail,
+                        email,
                         userId
                       );
                       setInviteEmail("");
                       await load();
-                      const link = `${window.location.origin}/invite/${token}`;
-                      alert(`Invitation link created:\n${link}`);
+                      const link = `${window.location.origin}/invite/${result.token}`;
+
+                      if (result.alreadyInvited) {
+                        alert(
+                          `This email was already invited (status: ${result.status}).\nExisting link:\n${link}`
+                        );
+                      } else {
+                        alert(`Invitation link created:\n${link}`);
+                      }
                     } catch (e: unknown) {
                       alert(
                         e instanceof Error ? e.message : "Failed to invite"

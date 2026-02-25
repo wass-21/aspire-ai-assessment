@@ -19,16 +19,50 @@ export async function createInvitation(
   inviteeEmail: string,
   inviterId: string
 ) {
+  const email = inviteeEmail.trim().toLowerCase();
   const token = randomToken();
+
+  // Try to insert a new invite
   const { error } = await supabase.from("event_invitations").insert({
     event_id: eventId,
     inviter_id: inviterId,
-    invitee_email: inviteeEmail.trim().toLowerCase(),
+    invitee_email: email,
     token,
     status: "pending",
   });
-  if (error) throw error;
-  return token;
+
+  // If it failed because the user was already invited, return the existing token
+  if (error) {
+    const msg = ((error as { message?: string })?.message ?? "").toLowerCase();
+    const isDuplicate =
+      msg.includes("duplicate") || msg.includes("unique");
+
+    if (isDuplicate) {
+      const { data: existing, error: e2 } = await supabase
+        .from("event_invitations")
+        .select("token,status")
+        .eq("event_id", eventId)
+        .eq("invitee_email", email)
+        .maybeSingle();
+
+      if (e2) throw e2;
+
+      if (!existing?.token) throw error;
+
+      // Optional: if previously declined, you can reset to pending (nice touch)
+      // await supabase.from("event_invitations").update({ status: "pending" }).eq("event_id", eventId).eq("invitee_email", email);
+
+      return {
+        token: existing.token as string,
+        alreadyInvited: true,
+        status: existing.status as string,
+      };
+    }
+
+    throw error;
+  }
+
+  return { token, alreadyInvited: false, status: "pending" };
 }
 
 export async function fetchInvitationsForEvent(
