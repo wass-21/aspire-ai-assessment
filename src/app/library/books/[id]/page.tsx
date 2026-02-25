@@ -5,17 +5,27 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/src/lib/useAuth";
 import { Book, fetchBookById, deleteBook } from "@/src/lib/books";
+import {
+  fetchActiveBorrow,
+  checkoutBook,
+  returnBook,
+  type BorrowRow,
+} from "@/src/lib/borrows";
 
 export default function BookDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { loading, role } = useAuth(true);
+  const { loading, role, user } = useAuth(true);
+  const userId = user?.id ?? null;
 
   const [book, setBook] = useState<Book | null>(null);
+  const [activeBorrow, setActiveBorrow] = useState<BorrowRow | null>(null);
   const [loadingBook, setLoadingBook] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const canManage = role === "admin" || role === "librarian";
+  const isBorrower =
+    activeBorrow !== null && userId !== null && activeBorrow.borrowed_by === userId;
 
   const load = async () => {
     if (!id) return;
@@ -24,6 +34,12 @@ export default function BookDetailsPage() {
       setLoadingBook(true);
       const b = await fetchBookById(id);
       setBook(b);
+      if (b) {
+        const ab = await fetchActiveBorrow(b.id);
+        setActiveBorrow(ab);
+      } else {
+        setActiveBorrow(null);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load book");
     } finally {
@@ -108,6 +124,57 @@ export default function BookDetailsPage() {
             <span className="font-medium">
               {book.status === "available" ? "Available" : "Borrowed"}
             </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-3">
+            {book.status === "available" && userId && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await checkoutBook(book.id, userId);
+                    await load();
+                  } catch (e: unknown) {
+                    alert(
+                      e instanceof Error ? e.message : "Failed to check out"
+                    );
+                  }
+                }}
+                className="rounded-lg border px-4 py-2 hover:bg-gray-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+              >
+                Check out
+              </button>
+            )}
+
+            {book.status === "borrowed" &&
+              activeBorrow &&
+              (isBorrower || canManage) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await returnBook(book.id, activeBorrow.id);
+                      await load();
+                    } catch (e: unknown) {
+                      alert(
+                        e instanceof Error ? e.message : "Failed to return"
+                      );
+                    }
+                  }}
+                  className="rounded-lg border px-4 py-2 hover:bg-gray-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+                >
+                  Return
+                </button>
+              )}
+
+            {book.status === "borrowed" && activeBorrow && (
+              <div className="flex items-center text-sm text-gray-600 dark:text-zinc-400">
+                Borrowed by:{" "}
+                <span className="ml-1 font-medium">
+                  {activeBorrow.borrowed_by}
+                </span>
+              </div>
+            )}
           </div>
 
           {book.isbn && (
