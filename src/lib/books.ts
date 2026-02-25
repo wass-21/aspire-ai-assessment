@@ -27,3 +27,19 @@ export async function fetchBooks(search?: string): Promise<Book[]> {
   if (error) throw error;
   return (data ?? []) as Book[];
 }
+
+export async function fetchBookById(id: string): Promise<Book | null> {
+  const { data, error } = await supabase
+    .from("books")
+    .select("id,title,author,isbn,tags,summary,status,created_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as Book) ?? null;
+}
+
+export async function deleteBook(id: string) {
+  const { error } = await supabase.from("books").delete().eq("id", id);
+  if (error) throw error;
+}
