@@ -23,7 +23,7 @@ export async function createInvitation(
   const { error } = await supabase.from("event_invitations").insert({
     event_id: eventId,
     inviter_id: inviterId,
-    invitee_email: inviteeEmail.trim(),
+    invitee_email: inviteeEmail.trim().toLowerCase(),
     token,
     status: "pending",
   });
