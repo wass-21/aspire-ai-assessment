@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/src/lib/useAuth";
-import { Book, fetchBookById, deleteBook } from "@/src/lib/books";
+import { Book, fetchBookById, deleteBook, updateBook } from "@/src/lib/books";
 import {
   fetchActiveBorrow,
   checkoutBook,
@@ -22,6 +22,7 @@ export default function BookDetailsPage() {
   const [activeBorrow, setActiveBorrow] = useState<BorrowRow | null>(null);
   const [loadingBook, setLoadingBook] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const canManage = role === "admin" || role === "librarian";
   const isBorrower =
@@ -188,6 +189,47 @@ export default function BookDetailsPage() {
               Tags:{" "}
               <span className="font-medium">{book.tags.join(", ")}</span>
             </div>
+          )}
+
+          {canManage && (
+            <button
+              type="button"
+              disabled={aiLoading || !book}
+              onClick={async () => {
+                if (!book) return;
+                setAiLoading(true);
+                try {
+                  const res = await fetch("/api/ai/book-metadata", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      title: book.title,
+                      author: book.author,
+                    }),
+                  });
+
+                  const data = await res.json();
+                  if (!res.ok)
+                    throw new Error(data?.error ?? "AI generation failed");
+
+                  await updateBook(book.id, {
+                    summary: data.summary,
+                    tags: data.tags,
+                  });
+
+                  await load();
+                } catch (e: unknown) {
+                  alert(
+                    e instanceof Error ? e.message : "Failed to generate summary"
+                  );
+                } finally {
+                  setAiLoading(false);
+                }
+              }}
+              className="rounded-lg border px-4 py-2 hover:bg-gray-50 disabled:opacity-60 dark:border-zinc-600 dark:hover:bg-zinc-700"
+            >
+              {aiLoading ? "Generating..." : "Generate AI summary + tags"}
+            </button>
           )}
 
           {book.summary && (
