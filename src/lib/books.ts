@@ -43,3 +43,13 @@ export async function deleteBook(id: string) {
   const { error } = await supabase.from("books").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function updateBook(
+  id: string,
+  updates: Partial<
+    Pick<Book, "title" | "author" | "isbn" | "tags" | "summary" | "status">
+  >
+) {
+  const { error } = await supabase.from("books").update(updates).eq("id", id);
+  if (error) throw error;
+}
