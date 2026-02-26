@@ -1,39 +1,34 @@
-# Aspire Software AI Assessment – Library Management & Event Scheduler
+# AI-Powered Library & Event Management Platform
 
-Full-stack AI web application built using Next.js, Supabase, and OpenRouter AI.
-
-Includes:
-
-- Library Management System
-- Event Scheduler with Invitations
-- AI-powered features
+This project is a full-stack web application built as part of an AI technical assessment.  
+It combines a Library Management System and an Event Scheduler into one secure, AI-enhanced platform.
 
 **Live Demo:**  
-https://aspire-ai-assessment.vercel.app/
+https://aspire-ai-assessment.vercel.app
 
 **GitHub Repository:**  
 https://github.com/wass-21/aspire-ai-assessment
 
 ---
 
-# Tech Stack
+# Technology Stack
 
 **Frontend:**
 
-- Next.js 16.1.6
+- Next.js (App Router)
 - React
 - TailwindCSS
 
 **Backend:**
 
-- Supabase (PostgreSQL, Authentication, API)
+- Supabase (PostgreSQL, Authentication, Row-Level Security)
 
 **Authentication:**
 
-- Google OAuth
-- Email and Password
+- Google OAuth (SSO)
+- Email and Password login/signup
 
-**AI:**
+**AI Integration:**
 
 - OpenRouter (gpt-4o-mini)
 
@@ -43,61 +38,151 @@ https://github.com/wass-21/aspire-ai-assessment
 
 ---
 
-# Features
+# Core Features
 
-## Library Management
+## 1. Library Management System
 
-- Add, edit, delete books
-- Search books by title or author
-- Borrow and return books
-- Role-based access control
-- AI-generated book summaries and tags
+### Book Management
+
+- Add books
+- Edit books
+- Delete books
+- Store metadata (title, author, description, tags)
+
+### Borrowing System
+
+- Check-out (borrow) books
+- Check-in (return) books
+- Track availability status
+
+### Search
+
+- Search books by title
+- Search by author
+- Search by tags
+
+### AI Integration
+
+- Generate book summaries automatically
+- Auto-generate tags using AI
 
 ---
 
-## Event Scheduler
+## 2. Event Scheduler
 
-- Create, edit, delete events
-- Search by title, location, and date range
-- Status tracking (upcoming, attending, maybe, declined)
-- Invitation system
-- Accept and decline invitations
-- AI event creation from natural language
+### Event Management
+
+- Create events
+- Edit events
+- Delete events
+- Store:
+  - Title
+  - Date and time
+  - Location
+  - Description
+
+### Status Tracking
+
+Events can be marked as:
+
+- Upcoming
+- Attending
+- Maybe
+- Declined
+
+### Search & Filtering
+
+Events can be searched by:
+
+- Title
+- Location
+- Date range
+
+### Invitation System
+
+- Invite users via email
+- Generate secure invitation links
+- Accept or decline invitations
+- Invited users can view accepted events
+
+### AI Integration
+
+Users can create events using natural language input.
 
 Example:
 
 *"Team meeting tomorrow at 10am in Beirut"*
 
-AI extracts structured event information automatically.
+AI automatically extracts:
+
+- Title
+- Date
+- Time
+- Location
+- Description
 
 ---
 
-# Authentication
+# Authentication & Authorization
 
-Supports:
+The platform supports:
 
-- Google Sign-In
-- Email / Password signup and login
+- Google SSO login
+- Email & password login
+- Role-based access control
+
+**Roles:**
+
+**Admin:**
+
+- Manage books
+- Manage events
+- Invite users
+
+**Member:**
+
+- Borrow books
+- Accept event invitations
+- View invited events
+
+Row-Level Security (RLS) is implemented in Supabase to ensure proper data isolation.
 
 ---
 
-# Database
+# Database Structure
 
-PostgreSQL via Supabase
+Main tables:
 
-**Tables:**
-
+- profiles (user roles)
 - books
 - borrows
 - events
 - event_invitations
-- profiles
 
-Includes Row Level Security (RLS).
+All access is protected with Supabase Row-Level Security policies.
+
+---
+
+# Deployment
+
+The application is deployed on Vercel.
+
+Required environment variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `OPENROUTER_API_KEY`
 
 ---
 
 # Local Development
+
+Clone the repository:
+
+```bash
+git clone https://github.com/wass-21/aspire-ai-assessment.git
+cd aspire-ai-assessment
+```
 
 Install dependencies:
 
@@ -119,6 +204,19 @@ Run:
 npm run dev
 ```
 
+---
+
+# Highlights
+
+- Full-stack architecture
+- Secure authentication (SSO + Email)
+- Role-based access control
+- AI-assisted workflows
+- Token-based invitation system
+- Production deployment
+
+---
+
 # Author
 
 **Wassim Hassoun**  
@@ -126,3 +224,4 @@ AI Software Engineer
 
 - **Email:** wassimhassoun310@gmail.com
 - **LinkedIn:** https://linkedin.com/in/wassim-hassoun
+- **GitHub:** https://github.com/wass-21
