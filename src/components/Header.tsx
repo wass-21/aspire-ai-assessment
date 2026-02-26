@@ -4,10 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/src/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setEmail(data.user?.email ?? "");
+    };
+
+    loadUser();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -52,13 +63,18 @@ export default function Header() {
           </nav>
         </div>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+            {email}
+          </span>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </header>
   );
