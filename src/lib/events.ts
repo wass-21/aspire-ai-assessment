@@ -12,7 +12,11 @@ export type EventRow = {
   created_at: string;
 };
 
-export async function fetchEvents(search?: string): Promise<EventRow[]> {
+export async function fetchEvents(
+  search?: string,
+  startDate?: string,
+  endDate?: string
+): Promise<EventRow[]> {
   const user = await supabase.auth.getUser();
   const email = user.data.user?.email?.toLowerCase();
   const userId = user.data.user?.id;
@@ -44,9 +48,20 @@ export async function fetchEvents(search?: string): Promise<EventRow[]> {
     .or(ownerOrInvited)
     .order("start_time", { ascending: true });
 
+  // text search
   if (search && search.trim()) {
     const s = search.trim();
     query = query.or(`title.ilike.%${s}%,location.ilike.%${s}%`);
+  }
+
+  // start date filter
+  if (startDate) {
+    query = query.gte("start_time", new Date(startDate).toISOString());
+  }
+
+  // end date filter
+  if (endDate) {
+    query = query.lte("start_time", new Date(endDate).toISOString());
   }
 
   const { data, error } = await query;

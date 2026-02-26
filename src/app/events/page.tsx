@@ -13,14 +13,16 @@ export default function EventsPage() {
 
   const [items, setItems] = useState<EventRow[]>([]);
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [loadingItems, setLoadingItems] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async (q?: string) => {
+  const loadEvents = async () => {
     try {
       setError(null);
       setLoadingItems(true);
-      const data = await fetchEvents(q);
+      const data = await fetchEvents(search, startDate, endDate);
       setItems(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to load events");
@@ -30,9 +32,9 @@ export default function EventsPage() {
   };
 
   useEffect(() => {
-    if (!loading) load();
+    if (!loading) loadEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [loading, search, startDate, endDate]);
 
   if (loading) {
     return (
@@ -63,32 +65,37 @@ export default function EventsPage() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap gap-3 mb-4">
             <input
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-              placeholder="Search by title or location..."
+              type="text"
+              placeholder="Search title or location"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              className="border rounded-lg px-3 py-2 border-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
             />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => load(search)}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
-              >
-                Search
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch("");
-                  load("");
-                }}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
-              >
-                Clear
-              </button>
-            </div>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border rounded-lg px-3 py-2 border-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+            />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border rounded-lg px-3 py-2 border-zinc-200 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setStartDate("");
+                setEndDate("");
+              }}
+              className="rounded-lg border border-zinc-200 px-4 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+            >
+              Clear
+            </button>
           </div>
 
           {error && (
