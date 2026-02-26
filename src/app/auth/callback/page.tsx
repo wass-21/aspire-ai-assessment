@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabaseClient";
+import { Spinner } from "@/src/components/skeletons";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -30,9 +31,9 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 dark:bg-zinc-900">
       <div className="text-center">
-        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
+        <Spinner className="mx-auto mb-4 h-8 w-8" />
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {status === "loading" ? "Signing you in…" : "Redirecting…"}
         </p>
